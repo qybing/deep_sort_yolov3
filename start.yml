@@ -1,0 +1,18 @@
+version: '3.3'
+
+services:
+  person_num:
+    image: qiaoyanbing/person_sum:v4
+    volumes:
+      - /opt/code/deep_sort_yolov3/person_sum.py:/opt/code/deep_sort_yolov3/person_sum.py
+      - /opt/code/deep_sort_yolov3/yolo3/utils.py:/opt/code/deep_sort_yolov3/yolo3/utils.py
+      - /opt/code/deep_sort_yolov3/yolo.py:/opt/code/deep_sort_yolov3/yolo.py
+      - /opt/code/deep_sort_yolov3/util/config.py:/opt/code/deep_sort_yolov3/util/config.py
+      - /etc/localtime:/etc/localtime
+#      - /opt/code/deep_sort_yolov3/tools/generate_detections.py:/opt/code/deep_sort_yolov3/tools/generate_detections.py
+#      - /opt/code/deep_sort_yolov3/video/1024_out_in_door.mp4:/opt/code/deep_sort_yolov3/1024_out_in_door.mp4
+    environment:
+      TASK_SLOT: 1
+      SERVICE_NAME: 1
+      NODE_HOSTNAME: 1
+    command: python3 person_sum.py

@@ -1,0 +1,38 @@
+version: '3.3'
+
+services:
+  granary_detect:
+    image: ioir123ju/gpu_granary_detection
+    environment:
+      TASK_SLOT: 1
+      SERVICE_NAME: 1
+      NODE_HOSTNAME: 1
+    networks:
+      - pose-network
+    volumes:
+      - /var/log/granary_detection:/home/granary_detection/log
+      - ./src/live/ingest/camera.conf:/home/granary_detection/camera.conf
+      - ./src/granary/setting.py:/home/granary_detection/setting.py
+      - /etc/localtime:/etc/localtime
+    command: python granary_detection.py
+
+  tf-pose:
+    image: qiaoyanbing/tf-pose:v3
+    networks:
+      - pose-network
+    volumes:
+      - ./src/pose/config.py:/opt/code/tf-pose-estimation/config/config.py
+      - ./src/pose/fdfs_client.conf:/opt/code/tf-pose-estimation/config/fdfs_client.conf
+      - /etc/localtime:/etc/localtime
+      - ./src/live/ingest/camera.conf:/opt/code/tf-pose-estimation/camera.conf
+      - ./src/pose/video_read.py:/opt/code/tf-pose-estimation/video_read.py
+      - ./src/pose/estimator.py:/opt/code/tf-pose-estimation/tf_pose/estimator.py
+    environment:
+      TASK_SLOT: 1
+      SERVICE_NAME: 1
+      NODE_HOSTNAME: 1
+    command: python3 video_read.py
+
+networks:
+  pose-network:
+    external: true
