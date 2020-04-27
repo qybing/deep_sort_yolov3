@@ -7,12 +7,11 @@ import colorsys
 import time
 import os
 import numpy as np
-import tensorflow as tf
 from keras import backend as K
 from keras.models import load_model
 from keras.layers import Input
 
-from util.config import CUDA_VISIBLE_DEVICES
+from setting.config import CUDA_VISIBLE_DEVICES
 from yolo3.model import yolo_eval, yolo_body, tiny_yolo_body
 from yolo3.utils import letterbox_image
 from keras.utils import multi_gpu_model

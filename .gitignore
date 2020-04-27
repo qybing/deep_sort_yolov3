@@ -1,3 +1,4 @@
+.idea
 etc
 image
 model_data
@@ -6,12 +7,11 @@ web_test
 yolov3_onnx
 yolo3/aaa.txt
 yolo3/model_bak.py
-util/config.py
+setting/config.py
 asy_person_sum.py
 convert.py
-util/config_213.py
-util/T4_测试结果.xlsx
-util/kafka_consumer.py
+setting/config_213.py
+setting/kafka_consumer.py
 deep_sort_yolov3_test.zip
 demo.py
 gen_img.py

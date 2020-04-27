@@ -12,18 +12,16 @@ from timeit import time
 import warnings
 
 import cv2
-import multiprocessing
 import numpy as np
 from PIL import Image
-from multiprocessing import Pool, Queue, Process
+from multiprocessing import Queue, Process
 from multiprocessing.managers import BaseManager
 
-from kafka import KafkaProducer, KafkaConsumer
+from kafka import KafkaProducer
 
-from Elastic import Elastic
 from tools.generate_detections import CreateBoxEncoder
-from util.config import VIDEO_NAME, RTMP, ENVIRO, DOCKER_ID, PROCESS_NUM, TIMES, KAFKA_ON, KAFKA_IP, KAFKA_PORT, \
-    APISOURCE, PARTITION, KEY, VIDEO_CONDE, DOOR_TOPIC, DOOR_IP_PORT, DOOR_HIGH, ES_ON, FX, FY, TOPIC_SHOW, TOPIC_NVR, \
+from setting.config import VIDEO_NAME, RTMP, ENVIRO, DOCKER_ID, PROCESS_NUM, TIMES, KAFKA_ON, KAFKA_IP, KAFKA_PORT, \
+    APISOURCE, VIDEO_CONDE, DOOR_HIGH, FX, FY, TOPIC_SHOW, TOPIC_NVR, \
     MAX_AGE
 from yolo import YOLO
 
@@ -86,7 +84,6 @@ def is_near_door(center_mass, door):
 
 def out_or_in(center_mass, door, in_house, disappear_box, in_out_door):
     """
-
     :param center_mass:
     :param door:
     :param in_house:
@@ -178,39 +175,39 @@ def out_or_in(center_mass, door, in_house, disappear_box, in_out_door):
 
 
 def get_door(url):
-    logger.info('{} get door box'.format(url))
-    consumer = KafkaConsumer(DOOR_TOPIC, bootstrap_servers=DOOR_IP_PORT, auto_offset_reset='earliest',
-                             consumer_timeout_ms=2000)
-    doors = []
-    for msg in consumer:
-        dic = json.loads((msg.value).decode('utf-8'))
-        if dic.get('videoUrl')[-4:] == url[-4:]:
-            door = dic.get('door')
-            if door and len(door) == 2:
-                print('Two door')
-                real_door = door[1] if door[0][0] > door[1][0] else door[0]
-                # real_door = [int((door[0][0] + door[1][0]) / 2),
-                #              int((door[0][1] + door[1][1]) / 2),
-                #              int((door[0][2] + door[1][2]) / 2),
-                #              int((door[0][3] + door[1][3]) / 2), 0]
-                doors.append(real_door)
-            if door and len(door) == 1:
-                doors.append(door[0])
-            if len(doors) > 50:
-                doors.pop(0)
-    if doors:
-        res_door = doors[-1][:-1]
-    else:
-        res_door = []
-    doors.clear()
-    # res_door = [int(335), int(185), int(372), int(305)]
+    # logger.info('{} get door box'.format(url))
+    # consumer = KafkaConsumer(DOOR_TOPIC, bootstrap_servers=DOOR_IP_PORT, auto_offset_reset='earliest',
+    #                          consumer_timeout_ms=2000)
+    # doors = []
+    # for msg in consumer:
+    #     dic = json.loads((msg.value).decode('utf-8'))
+    #     if dic.get('videoUrl')[-4:] == url[-4:]:
+    #         door = dic.get('door')
+    #         if door and len(door) == 2:
+    #             print('Two door')
+    #             # real_door = door[1] if door[0][0] > door[1][0] else door[0]
+    #             real_door = [int((door[0][0] + door[1][0]) / 2),
+    #                          int((door[0][1] + door[1][1]) / 2),
+    #                          int((door[0][2] + door[1][2]) / 2),
+    #                          int((door[0][3] + door[1][3]) / 2), 0]
+    #             doors.append(real_door)
+    #         if door and len(door) == 1:
+    #             doors.append(door[0])
+    #         if len(doors) > 50:
+    #             doors.pop(0)
+    # if doors:
+    #     res_door = doors[-1][:-1]
+    # else:
+    #     res_door = []
+    # doors.clear()
+    res_door = [650, 261, 706, 379]
     if res_door:
         logger.debug('door box:{}'.format(res_door))
         w = (res_door[2] - res_door[0])
-        res_door[0] = int((res_door[0] - 1.65 * w) * FX)
+        res_door[0] = int((res_door[0] - 1.60 * w) * FX)
         res_door[1] = int((res_door[1] - w * 0.4) * FY)
-        res_door[2] = int((res_door[2] + 1.65 * w) * FX)
-        res_door[3] = int((res_door[3] + w * 0.25) * FY)
+        res_door[2] = int((res_door[2] + 1.60 * w) * FX)
+        res_door[3] = int((res_door[3] + w * 0.35) * FY)
         logger.info('{} get door box Success'.format(url))
     else:
         res_door = []
@@ -218,8 +215,6 @@ def get_door(url):
     return res_door
 
 
-# def main(yolo, url, door):
-# @pysnooper.snoop()
 def main(yolo, url, CreateBoxEncoder, q):
     producer = None
     if KAFKA_ON:
@@ -464,7 +459,7 @@ def producer(url, q):
             ret, frame = video_capture.read()
             if not ret:
                 break
-            if i % 5 != 0 or image is None:
+            if i % TIMES != 0 or image is None:
                 continue
             if not FX == FY == 1:
                 try:
@@ -481,12 +476,9 @@ def producer(url, q):
 
 
 def rec_start(url, yolo, CreateBoxEncoder):
-    q = Queue(100)
-    # q = multiprocessing.Manager().Queue(100)
+    q = Queue(300)
     pro = Process(target=producer, args=(url, q,))
     con = Process(target=main, args=(yolo, url, CreateBoxEncoder, q))
-    # pro = threading.Thread(target=producer, args=(url, q,))
-    # con = threading.Thread(target=main, args=(yolo, url, CreateBoxEncoder, q))
     pro.start()
     con.start()
     pro.join()

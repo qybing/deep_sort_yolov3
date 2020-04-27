@@ -5,7 +5,7 @@ import argparse
 import numpy as np
 import cv2
 import tensorflow as tf
-from util.config import CUDA_VISIBLE_DEVICES
+from setting.config import CUDA_VISIBLE_DEVICES
 
 
 def _run_in_batches(f, data_dict, out, batch_size):

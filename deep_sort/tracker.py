@@ -2,7 +2,7 @@
 from __future__ import absolute_import
 import numpy as np
 
-from util.config import MAX_AGE
+from setting.config import MAX_AGE
 from . import kalman_filter
 from . import linear_assignment
 from . import iou_matching

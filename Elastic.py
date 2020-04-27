@@ -4,7 +4,7 @@ import uuid
 
 from elasticsearch import Elasticsearch
 
-from util.config import IS_USER, ES_HOST, ES_PORT, USER_NAME, PASSWORD, VERSION, INDEX, DOC_TYPE
+from setting.config import IS_USER, ES_HOST, ES_PORT, USER_NAME, PASSWORD, VERSION, INDEX, DOC_TYPE
 
 
 class Elastic(logging.Handler):
